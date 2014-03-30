@@ -59,8 +59,6 @@ location_ahead(Ahead) :-
     orientation(O),
     location_toward(L,O,Ahead).
 
-
-
 % Sensor logic
 
 make_percept_sentence([Vampire,Smoke,Cologne,Bump]) :-
@@ -145,6 +143,24 @@ act(strategy_reflex,die) :-
     agent_location(L),
     pit_location(L),
     is_short_goal(die_pit),
+    !.
+
+act(strategy_reflex,attack) :-
+    location_ahead(L),
+    is_vampire(yes, L),
+    !.
+
+act(strategy_reflex,grab) :-
+    agent_location(L),
+    is_dude(L),
+    is_short_goal(grab_dude),
+    !.
+
+act(strategy_reflex,climb) :- 
+    agent_location([1,1]),
+    agent_hold,
+    format("I'm getting out of this place~n", []),
+    is_short_goal(nothing_more),
     !.
 
 % Actuators
