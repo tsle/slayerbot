@@ -1,3 +1,4 @@
+
 % Knowledge Base
 
 tell_KB([Vampire,Smoke,Cologne,Bump]) :-
@@ -59,7 +60,15 @@ location_ahead(Ahead) :-
     location_toward(L,O,Ahead).
 
 
+
 % Sensor logic
+
+make_percept_sentence([Vampire,Smoke,Cologne,Bump]) :-
+    detect(Vampire),
+    smoke(Smoke),
+    cologne(Cologne),
+    bumped(Bump).
+
 detect(yes) :-
     location_ahead(L),
     vampire_location(L),
@@ -70,13 +79,39 @@ smoke(yes) :-
     location_ahead(L),
     pit_location(L),
     !.
-smooke(no).
+smoke(no).
 
 cologne(yes) :-
     location(L),
     dude(L),
     !.
+
 cologne(no).
+
+bumped(yes) :-
+    location([X,Y]),
+    X < 1,
+    !.
+
+bumped(yes) :-
+    location([X,Y]),
+    Y < 1,
+    !.
+
+bumped(yes) :-
+    location([X,Y]),
+    bounds([Max_X, Max_Y]),
+    X > Max_X,
+    !.
+
+bumped(yes) :-
+    location([X,Y]),
+    bounds([Max_X, Max_Y]),
+    Y > Max_Y,
+    !.
+
+bumped(no).
+    
 
 % directions
 dir(east) :- orientation(0) .
