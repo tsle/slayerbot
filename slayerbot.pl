@@ -84,6 +84,34 @@ dir(north) :- orientation(90) .
 dir(west) :- orientation(180) .
 dir(south) :- orientation(270) .
 
+%-----------------------------------------------------
+% Plan next move
+%
+
+make_action_query(Strategy,Action) :- act(strategy_reflex,Action),!.
+make_action_query(Strategy,Action) :- act(strategy_find_out,Action),!.
+make_action_query(Strategy,Action) :- act(strategy_go_out,Action),!.
+
+act(strategy_reflex,rebound) :- % last location
+    agent_location(L),
+    is_wall(L),
+    is_short_goal(rebound),!.
+
+act(strategy_reflex,die) :-
+    agent_healthy,
+    vampire_healthy,
+    agent_location(L),
+    vampire_location(L),
+    is_short_goal(die_vampire),
+    !.
+
+act(strategy_reflex,die) :-
+    agent_healthy,
+    agent_location(L),
+    pit_location(L),
+    is_short_goal(die_pit),
+    !.
+
 % Actuators
 % change state of slayer bot
 execute(turn_left) :- 
