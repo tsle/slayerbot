@@ -25,6 +25,46 @@
     is_visited/1 % visited rooms
     ]).
 
+%-----------------------------------------------------------------
+% Main
+%
+%
+%
+%
+
+step :-
+    agent_healthy,
+    agent_in_cave,
+    agent_location(L),
+    retractall(is_visited(L)),
+    assert(is_visited(L)),
+    description,
+    make_percept_sentence(Percept),
+    format("I feel ~p",[Percept]),
+    tell_KB(Percept),
+    ask_kb(Action),
+    format("I'm doing : ~p~n",[Action]),
+    apply(Action),
+    short_goal(SG),
+    time(T),
+    T2 is T+1,
+    retractall(time(_)),
+    assert(time(T2)),
+    agent_orientation(O),
+    assert(is_situation(T2,L,O,Percept,SG)),
+    step,
+    !.
+
+step :-
+    format("the game is finished.~n",[]),
+    agent_score(S),
+    time(T),
+    S2 is S - T,
+    retractall(agent_score(_)),
+    assert(agent_score(S2)),
+    description.
+
+%-----------------------------------------------------------------
 % Knowledge Base
 
 tell_KB([Vampire,Smoke,Cologne,Bump]) :-
