@@ -280,7 +280,8 @@ execute(bump) :- % bumped into wall, turn around
     Behind_O is (O+180) mod 360,
     location_ahead(L,Behind_O,L2),
     retractall(agent_location(_)),
-    assert(agent_location(L2)). 
+    assert(agent_location(L2)),
+    !. 
 
 execute(attack) :- % attack vampire in next room
     location_ahead(L_towards),
@@ -291,12 +292,35 @@ execute(attack) :- % attack vampire in next room
     assert(agent_location(L_towards)),
     !.
 
-execute(walk) :- % walk into next room
+execute(forward) :- % walk into next room
     location_ahead(L_towards),
     retractall(agent_location(_)),
     assert(agent_location(L_towards)),
     !.
 
+execute(climb) :-
+    agent_hold,
+    agent_score(S),
+    score_climb_with_dude(SC),
+    New_Score is S + SC,
+    retractall(agent_score(S)),
+    assert(agent_score(New_Score)),
+    retractall(agent_in_cave),
+    !.
+
+execute(grab) :-
+    agent_score(S),
+    score_grab(SG),
+    New_S is S + SG,
+    retractall(agent_score(S)),
+    assert(agent_score(New_S)),
+    retractall(dude_location(_)),   % no more dude at this place
+    retractall(is_dude(_)),     % The dude is with me!
+    assert(agent_hold),     % money, money,  :P 
+    retractall(agent_goal(_)),
+    assert(agent_goal(go_out)), % Now I want to go home
+    format("Yomi! Yomi! Give me the dude >=}...~n",[]),
+    !.  
 
 %----------------------------------------------------------------------
 % Definitions and Axioms
