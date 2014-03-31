@@ -1,4 +1,3 @@
-
 % Knowledge Base
 
 tell_KB([Vampire,Smoke,Cologne,Bump]) :-
@@ -253,8 +252,6 @@ act(strategy_find_out,turnleft) :-
     is_short_goal(find_out_180_good_),!.
     act(strategy_find_out,forward) :-
     agent_goal(find_out)
-
-
 
 
 %----------------------------------------------------------------------
