@@ -164,7 +164,7 @@ act(strategy_reflex,climb) :-
     !.
 
 %-------------------------------------------------------------------------
-% Move Directions
+% Move Directions - Adjacent Rooms
 %
 
 act(strategy_find_out,forward) :-
@@ -188,7 +188,7 @@ act(strategy_find_out,turnleft) :-
     is_short_goal(find_out_turnleft_good_good),
     !.
 
-act(strategy_find_out,turnleft) :-
+act(strategy_find_out,turnright) :-
     agent_goal(find_out),
     good(_),
     agent_orientation(O),
@@ -197,7 +197,7 @@ act(strategy_find_out,turnleft) :-
     location_toward(L,Planned_O,Planned_L),
     good(Planned_L),
     no(is_wall(Planned_L)),
-    is_short_goal(find_out_turnleft_good_good),
+    is_short_goal(find_out_turnright_good_good),
     !.
 
 % Actuators
@@ -215,5 +215,41 @@ execute(turn_left) :-
     assert(orientation(O1)),
     !.
 
+%----------------------------------------------------------------------
+% Execute - Actuators
+%
+
+execute(bump) :- % bumped into wall, turn around
+    agent_location(L),
+    agent_orientation(O),
+    Behind_O is (O+180) mod 360,
+    location_ahead(L,Behind_O,L2),
+    retractall(agent_location(_)),
+    assert(agent_location(L2)). 
+
+execute(attack) :- % attack vampire in next room
+    location_ahead(L_towards),
+    is_vampire(L_towards),
+    retractall(is_vampire(L_towards)),
+    assert(is_vampire(no,L_towards)),
+    retractall(agent_location(_)),
+    assert(agent_location(L_towards)),
+    !.
+
+execute(walk) :- % walk into next room
+    location_ahead(L_towards),
+    retractall(agent_location(_)),
+    assert(agent_location(L_towards)),
+    !.
 
 
+%----------------------------------------------------------------------
+% Definitions and Axioms
+% Keep track of visited rooms, always attack vampire, check good adj rooms, forward first, then left, then right, remember bounds
+
+no(P) :-
+    P,
+    !,
+    fail.
+
+no(P).
