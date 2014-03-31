@@ -163,6 +163,43 @@ act(strategy_reflex,climb) :-
     is_short_goal(nothing_more),
     !.
 
+%-------------------------------------------------------------------------
+% Move Directions
+%
+
+act(strategy_find_out,forward) :-
+    agent_goal(find_out),
+    good(_),
+    location_ahead(L),
+    good(L),
+    no(is_wall(L)),
+    is_short_goal(find_out_forward_good_good),
+    !.
+
+act(strategy_find_out,turnleft) :-
+    agent_goal(find_out),
+    good(_),
+    agent_orientation(O),
+    Planned_O is (O+90) mod 360,
+    agent_location(L),
+    location_toward(L,Planned_O,Planned_L),
+    good(Planned_L),
+    no(is_wall(Planned_L)),
+    is_short_goal(find_out_turnleft_good_good),
+    !.
+
+act(strategy_find_out,turnleft) :-
+    agent_goal(find_out),
+    good(_),
+    agent_orientation(O),
+    Planned_O is (O-90) mod 360,
+    agent_location(L),
+    location_toward(L,Planned_O,Planned_L),
+    good(Planned_L),
+    no(is_wall(Planned_L)),
+    is_short_goal(find_out_turnleft_good_good),
+    !.
+
 % Actuators
 % change state of slayer bot
 execute(turn_left) :- 
