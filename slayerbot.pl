@@ -127,7 +127,8 @@ dir(south) :- orientation(270) .
 
 %-----------------------------------------------------
 % Plan next move
-%
+
+ask_kb(Action) :- make_action_query(Strategy,Action).
 
 make_action_query(Strategy,Action) :- act(strategy_reflex,Action),!.
 make_action_query(Strategy,Action) :- act(strategy_find_out,Action),!.
@@ -139,15 +140,14 @@ act(strategy_reflex,rebound) :- % last location
     is_short_goal(rebound),!.
 
 act(strategy_reflex,die) :-
-    agent_healthy,
-    vampire_healthy,
+    alive,
     location(L),
     vampire_location(L),
     is_short_goal(die_vampire),
     !.
 
 act(strategy_reflex,die) :-
-    agent_healthy,
+    alive,
     location(L),
     pit_location(L),
     is_short_goal(die_pit),
@@ -208,8 +208,55 @@ act(strategy_find_out,turnleft) :-
     is_short_goal(find_out_turnleft_good_good),
     !.
 
+% And there is a good room but not adjacent
+    
+act(strategy_find_out,forward) :- 
+    agent_goal(find_out),
+    agent_courage,
+    good(_),
+    location_ahead(L),
+    medium(L),
+    no(is_wall(L)),
+    is_short_goal(find_out_forward_good_medium),
+    !.
+    
+act(strategy_find_out,turnleft) :- 
+    agent_goal(find_out),
+    agent_courage,
+    good(_),
+    agent_orientation(O),
+    Planned_O is (O+90) mod 360,
+    agent_location(L),
+    location_toward(L,Planned_O,Planned_L),
+    medium(Planned_L),% I use medium room to go to
+    no(is_wall(Planned_L)),
+    is_short_goal(find_out_turnleft_good_medium),
+    !.
+
+act(strategy_find_out,turnright) :- 
+    agent_goal(find_out),
+    agent_courage,
+    good(_),
+    agent_orientation(O),
+    Planned_O is abs(O-90) mod 360, 
+    agent_location(L),
+    location_toward(L,Planned_O,Planned_L),
+    medium(Planned_L),
+    no(is_wall(Planned_L)),
+    is_short_goal(find_out_turnright_good_medium),
+    !.
+    
+act(strategy_find_out,turnleft) :-
+    agent_goal(find_out),
+    agent_courage,
+    good(_),
+    is_short_goal(find_out_180_good_),!.
+    act(strategy_find_out,forward) :-
+    agent_goal(find_out)
+
 % Actuators
 % change state of slayer bot
+
 execute(turn_left) :- 
     orientation(O),
     01 is (O+90) mod 360,
@@ -223,5 +270,10 @@ execute(turn_left) :-
     assert(orientation(O1)),
     !.
 
-
-
+good(L) :-
+    is_vampire(no,L),
+    is_pit(no,L),
+    no(is_visited(L)).
+    
+medium(L) :- 
+    is_visited(L).
