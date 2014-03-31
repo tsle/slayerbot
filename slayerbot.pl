@@ -44,6 +44,14 @@ assume_vampire(yes,L) :-
     retractall(is_vampire(_,L)),
     assert(is_vampire(yes,L)).
 
+add_wall_KB(yes) :-% here I know where there is wall
+    agent_location(L),
+    retractall(is_wall(L)),
+    assert(is_wall(L)),
+    !.
+
+add_wall_KB(no).
+
 
 
 % location helper logic
@@ -126,21 +134,21 @@ make_action_query(Strategy,Action) :- act(strategy_find_out,Action),!.
 make_action_query(Strategy,Action) :- act(strategy_go_out,Action),!.
 
 act(strategy_reflex,rebound) :- % last location
-    agent_location(L),
+    location(L),
     is_wall(L),
     is_short_goal(rebound),!.
 
 act(strategy_reflex,die) :-
     agent_healthy,
     vampire_healthy,
-    agent_location(L),
+    location(L),
     vampire_location(L),
     is_short_goal(die_vampire),
     !.
 
 act(strategy_reflex,die) :-
     agent_healthy,
-    agent_location(L),
+    location(L),
     pit_location(L),
     is_short_goal(die_pit),
     !.
@@ -151,13 +159,13 @@ act(strategy_reflex,attack) :-
     !.
 
 act(strategy_reflex,grab) :-
-    agent_location(L),
+    location(L),
     is_dude(L),
     is_short_goal(grab_dude),
     !.
 
 act(strategy_reflex,climb) :- 
-    agent_location([1,1]),
+    location([1,1]),
     agent_hold,
     format("I'm getting out of this place~n", []),
     is_short_goal(nothing_more),
@@ -181,7 +189,7 @@ act(strategy_find_out,turnleft) :-
     good(_),
     agent_orientation(O),
     Planned_O is (O+90) mod 360,
-    agent_location(L),
+    location(L),
     location_toward(L,Planned_O,Planned_L),
     good(Planned_L),
     no(is_wall(Planned_L)),
@@ -193,7 +201,7 @@ act(strategy_find_out,turnleft) :-
     good(_),
     agent_orientation(O),
     Planned_O is (O-90) mod 360,
-    agent_location(L),
+    location(L),
     location_toward(L,Planned_O,Planned_L),
     good(Planned_L),
     no(is_wall(Planned_L)),
