@@ -254,21 +254,8 @@ act(strategy_find_out,turnleft) :-
     act(strategy_find_out,forward) :-
     agent_goal(find_out)
 
-% Actuators
-% change state of slayer bot
 
-execute(turn_left) :- 
-    orientation(O),
-    01 is (O+90) mod 360,
-    retractall(orientation(_)),
-    assert(orientation(O1)),
-    !.
-execute(turn_left) :- 
-    orientation(O),
-    01 is (O+270) mod 360,
-    retractall(orientation(_)),
-    assert(orientation(O1)),
-    !.
+
 
 %----------------------------------------------------------------------
 % Execute - Actuators
@@ -321,6 +308,20 @@ execute(grab) :-
     assert(agent_goal(go_out)), % Now I want to go home
     format("Yomi! Yomi! Give me the dude >=}...~n",[]),
     !.  
+
+execute(turn_left) :- 
+    orientation(O),
+    01 is (O+90) mod 360,
+    retractall(orientation(_)),
+    assert(orientation(O1)),
+    !.
+
+execute(turn_left) :- 
+    orientation(O),
+    01 is (O+270) mod 360,
+    retractall(orientation(_)),
+    assert(orientation(O1)),
+    !.
 
 %----------------------------------------------------------------------
 % Definitions and Axioms
