@@ -1,3 +1,30 @@
+:- dynamic([
+    short_goal/1,
+    is_situation/5,
+    time/1,
+    nb_visited/1,
+    score_climb_with_dude/1,
+    score_grab/1,
+    score_vampire_dead/1,
+    score_agent_dead/1,
+    land_extent/1,
+    vampire_location/1,
+    dude_location/1,
+    pit_location/1,
+    agent_location/1,
+    agent_orientation/1,
+    agent_healthy/0,
+    agent_hold/0,
+    agent_goal/1,
+    agent_score/1,
+    agent_in_cave/0,
+    is_vampire/2, % where we think vampire is
+    is_pit/2, % where we think pit is
+    is_dude/1, % where dude is
+    is_wall/1, % where walls are
+    is_visited/1 % visited rooms
+    ]).
+
 % Knowledge Base
 
 tell_KB([Vampire,Smoke,Cologne,Bump]) :-
@@ -264,7 +291,8 @@ execute(bump) :- % bumped into wall, turn around
     Behind_O is (O+180) mod 360,
     location_ahead(L,Behind_O,L2),
     retractall(agent_location(_)),
-    assert(agent_location(L2)). 
+    assert(agent_location(L2)),
+    !. 
 
 execute(attack) :- % attack vampire in next room
     location_ahead(L_towards),
@@ -275,11 +303,35 @@ execute(attack) :- % attack vampire in next room
     assert(agent_location(L_towards)),
     !.
 
-execute(walk) :- % walk into next room
+execute(forward) :- % walk into next room
     location_ahead(L_towards),
     retractall(agent_location(_)),
     assert(agent_location(L_towards)),
     !.
+
+execute(climb) :-
+    agent_hold,
+    agent_score(S),
+    score_climb_with_dude(SC),
+    New_Score is S + SC,
+    retractall(agent_score(S)),
+    assert(agent_score(New_Score)),
+    retractall(agent_in_cave),
+    !.
+
+execute(grab) :-
+    agent_score(S),
+    score_grab(SG),
+    New_S is S + SG,
+    retractall(agent_score(S)),
+    assert(agent_score(New_S)),
+    retractall(dude_location(_)),   % no more dude at this place
+    retractall(is_dude(_)),     % The dude is with me!
+    assert(agent_hold),     % money, money,  :P 
+    retractall(agent_goal(_)),
+    assert(agent_goal(go_out)), % Now I want to go home
+    format("Yomi! Yomi! Give me the dude >=}...~n",[]),
+    !.  
 
 execute(turn_left) :- 
     orientation(O),
@@ -294,6 +346,17 @@ execute(turn_left) :-
     retractall(orientation(_)),
     assert(orientation(O1)),
     !.
+
+%----------------------------------------------------------------------
+% Display
+%
+
+description :-
+    agent_location([X,Y]),
+    orientation(O),
+    time(T),
+    format("> I am in ~p, turned in direction ~p",[[X,Y],O]),
+    format("\nTime: ~p",T).    
 
 %----------------------------------------------------------------------
 % Definitions and Axioms
