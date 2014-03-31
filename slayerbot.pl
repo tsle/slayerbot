@@ -41,6 +41,8 @@ schedule :-
     step.
 
 step :-
+    time(T),
+    T < 13,
     agent_healthy,
     agent_in_cave,
     agent_location(L),
@@ -79,14 +81,16 @@ initialize_land(fig62):-
     retractall(vampire_location(_)),
     retractall(dude_location(_)),
     retractall(pit_location(_)),
-    assert(bounds([4,3])),
+    assert(bounds([3,4])),
     assert(vampire_location([1,3])),
     assert(vampire_location([1,4])),
+    assert(vampire_location([2,2])),
+    assert(vampire_location([3,2])),
     assert(vampire_location([2,4])),
     assert(vampire_location([3,4])),
     assert(dude_location([2,3])),
-    assert(pit_location([3,3])),
-    assert(pit_location([4,4])).
+    assert(pit_location([3,3])).
+
 
 initialize_agent(fig62):-
     retractall(agent_location(_)),
@@ -398,11 +402,11 @@ act(strategy_find_out,turnleft) :-
 %----------------------------------------------------------------------
 % Execute - Actuators
 
-execute(bump) :- % bumped into wall, turn around
+execute(rebound) :- % bumped into wall, turn around
     agent_location(L),
     agent_orientation(O),
     Behind_O is (O+180) mod 360,
-    location_ahead(L,Behind_O,L2),
+    location_toward(L,Behind_O,L2),
     retractall(agent_location(_)),
     assert(agent_location(L2)),
     !. 
@@ -435,8 +439,8 @@ execute(die) :-
 
 execute(attack) :- % attack vampire in next room
     location_ahead(L_towards),
-    is_vampire(L_towards),
-    retractall(is_vampire(L_towards)),
+    is_vampire(yes,L_towards),
+    retractall(is_vampire(_,L_towards)),
     assert(is_vampire(no,L_towards)),
     retractall(agent_location(_)),
     assert(agent_location(L_towards)),
@@ -472,16 +476,17 @@ execute(grab) :-
     format("Yomi! Yomi! Give me the dude >=}...~n",[]),
     !.  
 
-execute(turn_left) :- 
+execute(turnleft) :- 
+    format("\nTURN LEFT\n"),
     agent_orientation(O),
-    01 is (O+90) mod 360,
+    O1 is (O+90) mod 360,
     retractall(agent_orientation(_)),
     assert(agent_orientation(O1)),
     !.
 
-execute(turn_left) :- 
+execute(turnright) :- 
     agent_orientation(O),
-    01 is (O+270) mod 360,
+    O1 is (O+270) mod 360,
     retractall(agent_orientation(_)),
     assert(agent_orientation(O1)),
     !.
