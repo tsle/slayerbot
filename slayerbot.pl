@@ -254,21 +254,8 @@ act(strategy_find_out,turnleft) :-
     act(strategy_find_out,forward) :-
     agent_goal(find_out)
 
-% Actuators
-% change state of slayer bot
 
-execute(turn_left) :- 
-    orientation(O),
-    01 is (O+90) mod 360,
-    retractall(orientation(_)),
-    assert(orientation(O1)),
-    !.
-execute(turn_left) :- 
-    orientation(O),
-    01 is (O+270) mod 360,
-    retractall(orientation(_)),
-    assert(orientation(O1)),
-    !.
+
 
 %----------------------------------------------------------------------
 % Execute - Actuators
@@ -297,6 +284,19 @@ execute(walk) :- % walk into next room
     assert(agent_location(L_towards)),
     !.
 
+execute(turn_left) :- 
+    orientation(O),
+    01 is (O+90) mod 360,
+    retractall(orientation(_)),
+    assert(orientation(O1)),
+    !.
+
+execute(turn_left) :- 
+    orientation(O),
+    01 is (O+270) mod 360,
+    retractall(orientation(_)),
+    assert(orientation(O1)),
+    !.
 
 %----------------------------------------------------------------------
 % Definitions and Axioms
