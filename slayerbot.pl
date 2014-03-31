@@ -44,6 +44,14 @@ assume_vampire(yes,L) :-
     retractall(is_vampire(_,L)),
     assert(is_vampire(yes,L)).
 
+add_wall_KB(yes) :-% here I know where there is wall
+    agent_location(L),
+    retractall(is_wall(L)),
+    assert(is_wall(L)),
+    !.
+
+add_wall_KB(no).
+
 
 
 % location helper logic
@@ -119,28 +127,28 @@ dir(south) :- orientation(270) .
 
 %-----------------------------------------------------
 % Plan next move
-%
+
+ask_kb(Action) :- make_action_query(Strategy,Action).
 
 make_action_query(Strategy,Action) :- act(strategy_reflex,Action),!.
 make_action_query(Strategy,Action) :- act(strategy_find_out,Action),!.
 make_action_query(Strategy,Action) :- act(strategy_go_out,Action),!.
 
 act(strategy_reflex,rebound) :- % last location
-    agent_location(L),
+    location(L),
     is_wall(L),
     is_short_goal(rebound),!.
 
 act(strategy_reflex,die) :-
-    agent_healthy,
-    vampire_healthy,
-    agent_location(L),
+    alive,
+    location(L),
     vampire_location(L),
     is_short_goal(die_vampire),
     !.
 
 act(strategy_reflex,die) :-
-    agent_healthy,
-    agent_location(L),
+    alive,
+    location(L),
     pit_location(L),
     is_short_goal(die_pit),
     !.
@@ -151,13 +159,13 @@ act(strategy_reflex,attack) :-
     !.
 
 act(strategy_reflex,grab) :-
-    agent_location(L),
+    location(L),
     is_dude(L),
     is_short_goal(grab_dude),
     !.
 
 act(strategy_reflex,climb) :- 
-    agent_location([1,1]),
+    location([1,1]),
     agent_hold,
     format("I'm getting out of this place~n", []),
     is_short_goal(nothing_more),
@@ -181,7 +189,7 @@ act(strategy_find_out,turnleft) :-
     good(_),
     agent_orientation(O),
     Planned_O is (O+90) mod 360,
-    agent_location(L),
+    location(L),
     location_toward(L,Planned_O,Planned_L),
     good(Planned_L),
     no(is_wall(Planned_L)),
@@ -193,15 +201,62 @@ act(strategy_find_out,turnright) :-
     good(_),
     agent_orientation(O),
     Planned_O is (O-90) mod 360,
-    agent_location(L),
+    location(L),
     location_toward(L,Planned_O,Planned_L),
     good(Planned_L),
     no(is_wall(Planned_L)),
     is_short_goal(find_out_turnright_good_good),
     !.
 
+% And there is a good room but not adjacent
+    
+act(strategy_find_out,forward) :- 
+    agent_goal(find_out),
+    agent_courage,
+    good(_),
+    location_ahead(L),
+    medium(L),
+    no(is_wall(L)),
+    is_short_goal(find_out_forward_good_medium),
+    !.
+    
+act(strategy_find_out,turnleft) :- 
+    agent_goal(find_out),
+    agent_courage,
+    good(_),
+    agent_orientation(O),
+    Planned_O is (O+90) mod 360,
+    agent_location(L),
+    location_toward(L,Planned_O,Planned_L),
+    medium(Planned_L),% I use medium room to go to
+    no(is_wall(Planned_L)),
+    is_short_goal(find_out_turnleft_good_medium),
+    !.
+
+act(strategy_find_out,turnright) :- 
+    agent_goal(find_out),
+    agent_courage,
+    good(_),
+    agent_orientation(O),
+    Planned_O is abs(O-90) mod 360, 
+    agent_location(L),
+    location_toward(L,Planned_O,Planned_L),
+    medium(Planned_L),
+    no(is_wall(Planned_L)),
+    is_short_goal(find_out_turnright_good_medium),
+    !.
+    
+act(strategy_find_out,turnleft) :-
+    agent_goal(find_out),
+    agent_courage,
+    good(_),
+    is_short_goal(find_out_180_good_),!.
+    act(strategy_find_out,forward) :-
+    agent_goal(find_out)
+
 % Actuators
 % change state of slayer bot
+
 execute(turn_left) :- 
     orientation(O),
     01 is (O+90) mod 360,
@@ -253,3 +308,11 @@ no(P) :-
     fail.
 
 no(P).
+
+good(L) :-
+    is_vampire(no,L),
+    is_pit(no,L),
+    no(is_visited(L)).
+    
+medium(L) :- 
+    is_visited(L).
