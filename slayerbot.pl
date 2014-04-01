@@ -397,11 +397,6 @@ act(strategy_find_out,turnleft) :-
 % Get out - Found the dude
 %
 
-act(strategy_go_out,climb) :-
-    agent_location([1,1]),
-    is_short_goal(go_out___climb),
-    !.
-
 act(strategy_go_out,forward) :-
     location_ahead(L),
     medium(L),
