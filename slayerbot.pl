@@ -42,7 +42,7 @@ schedule :-
 
 step :-
     time(T),
-    T < 50,
+    T < 100,
     agent_healthy,
     agent_in_cave,
     agent_location(L),
@@ -392,6 +392,45 @@ act(strategy_find_out,turnright) :-
 act(strategy_find_out,turnleft) :-
     agent_goal(find_out),
     is_short_goal(find_out_180_good),!.
+
+%-------------------------------------------------------------------------
+% Get out - Found the dude
+%
+
+act(strategy_go_out,climb) :-
+    agent_location([1,1]),
+    is_short_goal(go_out___climb),
+    !.
+
+act(strategy_go_out,forward) :-
+    location_ahead(L),
+    medium(L),
+    no(is_wall(L)),
+    is_short_goal(go_out_forward__medium),
+    !.
+
+act(strategy_go_out,turnleft) :-
+    agent_orientation(O),
+    Planned_O is (O+90) mod 360,
+    agent_location(L),
+    location_toward(L,Planned_O,Planned_L),
+    medium(Planned_L),
+    no(is_wall(Planned_L)),
+    is_short_goal(go_out_turnleft__medium),
+    !.
+
+act(strategy_go_out,turnright) :-
+    agent_orientation(O),
+    Planned_O is abs(O-90) mod 360,
+    agent_location(L),
+    location_toward(L,Planned_O,Planned_L),
+    medium(Planned_L),
+    no(is_wall(Planned_L)),
+    is_short_goal(go_out_turnright_medium),
+    !.
+
+act(strategy_go_out,turnleft) :- % Just want to go far left
+    is_short_goal(go_out_180__). 
 
 %----------------------------------------------------------------------
 % Execute - Actuators
