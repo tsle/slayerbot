@@ -42,7 +42,7 @@ schedule :-
 
 step :-
     time(T),
-    T < 13,
+    T < 50,
     agent_healthy,
     agent_in_cave,
     agent_location(L),
@@ -174,6 +174,8 @@ assume_pit(no,L) :-
     !.
 
 assume_pit(yes,L) :-
+    retractall(is_visited(L)),
+    assert(is_visited(L)),
     retractall(is_pit(_,L)),
     assert(is_pit(yes,L)).
 
@@ -202,7 +204,6 @@ add_wall_kb(yes) :-
     !.
 
 add_wall_kb(no).
-
 
 
 % location helper logic
@@ -311,7 +312,7 @@ act(strategy_reflex,attack) :-
 
 act(strategy_reflex,grab) :-
     agent_location(L),
-    is_dude(L),
+    is_dude(yes,L),
     is_short_goal(grab_dude),
     !.
 
@@ -328,7 +329,6 @@ act(strategy_reflex,climb) :-
 
 act(strategy_find_out,forward) :-
     agent_goal(find_out),
-    good(_),
     location_ahead(L),
     good(L),
     no(is_wall(L)),
@@ -337,24 +337,22 @@ act(strategy_find_out,forward) :-
 
 act(strategy_find_out,turnleft) :-
     agent_goal(find_out),
-    good(_),
     agent_orientation(O),
     Planned_O is (O+90) mod 360,
     agent_location(L),
     location_toward(L,Planned_O,Planned_L),
-    good(Planned_L),
+    no(is_visited(Planned_L)),
     no(is_wall(Planned_L)),
     is_short_goal(find_out_turnleft_good_good),
     !.
 
 act(strategy_find_out,turnright) :-
     agent_goal(find_out),
-    good(_),
     agent_orientation(O),
-    Planned_O is (O-90) mod 360,
+    Planned_O is (O+270) mod 360,
     agent_location(L),
     location_toward(L,Planned_O,Planned_L),
-    good(Planned_L),
+    no(is_visited(Planned_L)),
     no(is_wall(Planned_L)),
     is_short_goal(find_out_turnright_good_good),
     !.
@@ -363,8 +361,7 @@ act(strategy_find_out,turnright) :-
     
 act(strategy_find_out,forward) :- 
     agent_goal(find_out),
-    good(_),
-    location_ahead(L),
+    location_ahead(L),    
     medium(L),
     no(is_wall(L)),
     is_short_goal(find_out_forward_good_medium),
@@ -372,19 +369,17 @@ act(strategy_find_out,forward) :-
     
 act(strategy_find_out,turnleft) :- 
     agent_goal(find_out),
-    good(_),
     agent_orientation(O),
     Planned_O is (O+90) mod 360,
     agent_location(L),
     location_toward(L,Planned_O,Planned_L),
-    medium(Planned_L),% I use medium room to go to
+    medium(Planned_L),
     no(is_wall(Planned_L)),
     is_short_goal(find_out_turnleft_good_medium),
     !.
 
 act(strategy_find_out,turnright) :- 
     agent_goal(find_out),
-    good(_),
     agent_orientation(O),
     Planned_O is abs(O-90) mod 360, 
     agent_location(L),
@@ -396,7 +391,6 @@ act(strategy_find_out,turnright) :-
     
 act(strategy_find_out,turnleft) :-
     agent_goal(find_out),
-    good(_),
     is_short_goal(find_out_180_good),!.
 
 %----------------------------------------------------------------------
@@ -439,7 +433,8 @@ execute(die) :-
 
 execute(attack) :- % attack vampire in next room
     location_ahead(L_towards),
-    is_vampire(yes,L_towards),
+    vampire_location(L_towards),
+    retractall(vampire_location(L_towards)),
     retractall(is_vampire(_,L_towards)),
     assert(is_vampire(no,L_towards)),
     retractall(agent_location(_)),
@@ -518,7 +513,9 @@ good(L) :-
     is_pit(no,L),
     no(is_visited(L)).
     
-medium(L) :- is_visited(L).
+medium(L) :- 
+    is_pit(no,L),
+    is_visited(L).
 
 is_short_goal(X) :-
     retractall(short_goal(_)),
