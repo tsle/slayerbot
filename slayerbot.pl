@@ -1,3 +1,7 @@
+%--------------------------------------------------------------
+% Authors: Khang Le, Tony Le
+% adapted from Wumpus World - http://archives.limsi.fr/Individu/hernandz/resources/software/wumpus/source/wumpus12.pl
+
 :- dynamic([
     short_goal/1,
     is_situation/5,
@@ -33,7 +37,7 @@
 
 schedule :-
     initialize_general,
-    format("the game is begun.~n",[]),
+    format("The game is begun.~n",[]),
     retractall(is_situation(_,_,_,_,_)),
     time(T),agent_location(L),agent_orientation(O),
     assert(is_situation(T,L,O,[],i_know_nothing)),
@@ -50,7 +54,7 @@ step :-
     assert(is_visited(L)),
     description,
     make_percept_sentence(Percept),
-    format("I feel ~p",[Percept]),
+    format("I feel ~p. ",[Percept]),
     tell_KB(Percept),
     ask_kb(Action),
     format("I'm doing : ~p~n",[Action]),
@@ -66,13 +70,12 @@ step :-
     !.
 
 step :-
-    format("the game is finished.~n",[]),
+    format("The game is finished.~n",[]),
     agent_score(S),
     time(T),
     S2 is S - T,
     retractall(agent_score(_)),
-    assert(agent_score(S2)),
-    description.
+    assert(agent_score(S2)).
 
 % map initialization
 
@@ -319,7 +322,6 @@ act(strategy_reflex,grab) :-
 act(strategy_reflex,climb) :- 
     agent_location([1,1]),
     agent_hold,
-    format("I'm getting out of this place~n", []),
     is_short_goal(nothing_more),
     !.
 
@@ -482,13 +484,14 @@ execute(forward) :- % walk into next room
     !.
 
 execute(climb) :-
+    format("I'm getting out of this place.~n", []),
     agent_hold,
     agent_score(S),
+    retractall(agent_in_cave),
     score_climb_with_dude(SC),
     New_Score is S + SC,
     retractall(agent_score(S)),
     assert(agent_score(New_Score)),
-    retractall(agent_in_cave),
     !.
 
 execute(grab) :-
@@ -506,7 +509,6 @@ execute(grab) :-
     !.  
 
 execute(turnleft) :- 
-    format("\nTURN LEFT\n"),
     agent_orientation(O),
     O1 is (O+90) mod 360,
     retractall(agent_orientation(_)),
@@ -526,10 +528,10 @@ execute(turnright) :-
 
 description :-
     agent_location([X,Y]),
-    agent_orientation(O),
+    dir(O),
     time(T),
-    format("> I am in ~p, turned in direction ~p",[[X,Y],O]),
-    format("\nTime: ~p",T).    
+    format("I am in ~p, turned in direction ~p.",[[X,Y],O]),
+    format("\nTime: ~p\n\n",T).    
 
 %----------------------------------------------------------------------
 % Definitions and Axioms
